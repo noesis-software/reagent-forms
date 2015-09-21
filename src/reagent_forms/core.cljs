@@ -102,13 +102,15 @@
         :input-field field))))
 
 (defmethod init-field :container
-  [[type {:keys [valid?] :as attrs} & body] {:keys [doc]}]
+  [[type {:keys [valid?] :as attrs} & [maybe-fn :as body]] {:keys [doc]}]
   (render-element attrs doc
     (into [type
            (if-let [valid-class (when valid? (valid? (deref doc)))]
              (update-in attrs [:class] #(if (not (empty? %)) (str % " " valid-class) valid-class))
              attrs)]
-          body)))
+          (if (fn? maybe-fn)
+            (maybe-fn)
+            body))))
 
 (defmethod init-field :input-field
   [[_ {:keys [field] :as attrs} :as component] {:keys [doc] :as opts}]
